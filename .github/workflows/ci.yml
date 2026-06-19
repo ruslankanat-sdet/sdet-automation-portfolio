@@ -51,12 +51,15 @@ jobs:
           mkdir -p allure-results
           cp -r api-tests/allure-results/. allure-results/ 2>/dev/null || true
           cp -r ui-tests/allure-results/. allure-results/ 2>/dev/null || true
+      - name: Set up Java (Allure CLI runtime)
+        if: always()
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
       - name: Generate Allure report
         if: always()
-        uses: simple-elf/allure-report-action@v1.9
-        with:
-          allure_results: allure-results
-          allure_report: allure-report
+        run: npx -y allure-commandline generate allure-results --clean -o allure-report
       - name: Upload report artifact
         if: always()
         uses: actions/upload-pages-artifact@v3
