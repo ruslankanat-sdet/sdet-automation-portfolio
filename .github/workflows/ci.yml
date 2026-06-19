@@ -1,0 +1,75 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Stand up the SUT (Postgres in Docker + Medusa backend/storefront via npm),
+      # seed deterministic data, and emit sut/.sut-env. One SUT shared by both suites;
+      # intra-suite parallelism comes from pytest-xdist and Playwright workers.
+      - name: Bring up SUT
+        run: bash sut/up.sh
+
+      - name: API suite (Python + pytest)
+        working-directory: api-tests
+        run: |
+          pip install -r requirements.txt
+          set -a; . ../sut/.sut-env; set +a
+          pytest
+
+      - name: UI suite (TypeScript + Playwright)
+        working-directory: ui-tests
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+          set -a; . ../sut/.sut-env; set +a
+          npx playwright test
+
+      # --- Unified Allure report across both languages ---
+      - name: Merge Allure results
+        if: always()
+        run: |
+          mkdir -p allure-results
+          cp -r api-tests/allure-results/. allure-results/ 2>/dev/null || true
+          cp -r ui-tests/allure-results/. allure-results/ 2>/dev/null || true
+      - name: Generate Allure report
+        if: always()
+        uses: simple-elf/allure-report-action@v1.9
+        with:
+          allure_results: allure-results
+          allure_report: allure-report
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: allure-report
+
+  deploy-report:
+    needs: test
+    if: always() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

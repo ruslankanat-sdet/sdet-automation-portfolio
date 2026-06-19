@@ -1,0 +1,18 @@
+# Postgres for the SUT. The Medusa backend + storefront run via npm (see up.sh) so
+# the same flow works identically on a Mac dev box and a Linux CI runner without
+# fighting container architecture. Host port 5442 dodges any native Postgres on 5432.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sut-postgres
+    environment:
+      POSTGRES_USER: medusa
+      POSTGRES_PASSWORD: medusa
+      POSTGRES_DB: medusa
+    ports:
+      - "5442:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medusa"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
