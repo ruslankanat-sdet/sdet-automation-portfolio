@@ -1,7 +1,7 @@
 # SDET Portfolio — Reliable, Polyglot Test Automation
 
-[![tests](https://img.shields.io/badge/tests-CI-blue)](.github/workflows/ci.yml)
-[![allure report](https://img.shields.io/badge/report-Allure-purple)](#reporting)
+[![tests](https://github.com/ruslankanat-sdet/sdet-automation-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/ruslankanat-sdet/sdet-automation-portfolio/actions/workflows/ci.yml)
+[![Allure report](https://img.shields.io/badge/report-Allure-purple)](https://ruslankanat-sdet.github.io/sdet-automation-portfolio/)
 
 A single, deep test-automation project that demonstrates **lead-level SDET craft**:
 rigorous, reliable, well-architected automation — not a pile of shallow demos.
@@ -65,7 +65,8 @@ Requires Docker, Node 22+, and Python 3.12+. The SUT picks non-default host port
 ## Reporting
 
 Both suites emit Allure results; CI merges them into one report published to GitHub
-Pages. Locally: `npm run report` (UI) or `allure serve api-tests/allure-results`.
+Pages: **https://ruslankanat-sdet.github.io/sdet-automation-portfolio/**.
+Locally: `npm run report` (UI) or `allure serve api-tests/allure-results`.
 
 ## Roadmap
 
